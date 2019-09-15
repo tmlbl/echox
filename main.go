@@ -58,8 +58,8 @@ func main() {
 	// Set up handlers for the config
 	for method := range cfg.Handlers {
 		for path, cmd := range cfg.Handlers[method] {
-			fmt.Println("[echox]", path, "=>", cmd)
-			srv.AddRoute(http.MethodGet, path, cmd)
+			fmt.Println("[echox]", method, path, "=>", cmd)
+			srv.AddRoute(method, path, cmd)
 		}
 	}
 

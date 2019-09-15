@@ -1,8 +1,9 @@
 package server
 
 import (
-	"net/http"
 	"strings"
+
+	"github.com/tmlbl/echox/util"
 )
 
 // RouteTree stores the association between route parts and handlers
@@ -13,14 +14,9 @@ type RouteTree struct {
 	method   string
 }
 
-var httpMethods = []string{
-	http.MethodGet, http.MethodConnect, http.MethodDelete, http.MethodHead,
-	http.MethodOptions, http.MethodPatch, http.MethodPut, http.MethodTrace,
-}
-
 func NewRouteTree() *RouteTree {
 	children := []*RouteTree{}
-	for _, method := range httpMethods {
+	for _, method := range util.HTTPMethods {
 		children = append(children, &RouteTree{
 			method: method,
 		})

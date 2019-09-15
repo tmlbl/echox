@@ -1,17 +1,13 @@
 package config
 
 import (
-	"net/http"
 	"strings"
+
+	"github.com/tmlbl/echox/util"
 )
 
-var httpMethods = []string{
-	http.MethodGet, http.MethodConnect, http.MethodDelete, http.MethodHead,
-	http.MethodOptions, http.MethodPatch, http.MethodPut, http.MethodTrace,
-}
-
 func isMethod(s string) bool {
-	for _, m := range httpMethods {
+	for _, m := range util.HTTPMethods {
 		if s == m {
 			return true
 		}
@@ -23,7 +19,7 @@ type HandlerMap map[string]map[string]string
 
 func NewHandlerMap() HandlerMap {
 	h := HandlerMap{}
-	for _, m := range httpMethods {
+	for _, m := range util.HTTPMethods {
 		h[m] = map[string]string{}
 	}
 	return h
