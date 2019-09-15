@@ -72,6 +72,9 @@ func (s *BashShell) Exec(cmd string, defs map[string]string) ([]byte, error) {
 	s.lock.Lock()
 	s.busy = true
 	defer s.lock.Unlock()
+	defer func() {
+		s.busy = false
+	}()
 
 	// Define temporary variables
 	for name, value := range defs {
@@ -83,7 +86,6 @@ func (s *BashShell) Exec(cmd string, defs map[string]string) ([]byte, error) {
 		return nil, err
 	}
 
-	s.busy = false
 	return out, nil
 }
 

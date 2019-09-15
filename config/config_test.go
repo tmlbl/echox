@@ -45,6 +45,29 @@ func TestConfigParsing(t *testing.T) {
 			},
 			in: "include foo.sh; get /now date",
 		},
+		{
+			expect: Config{
+				Handlers: NewHandlerMap().Add(
+					http.MethodPost,
+					"/docs/:name", "create_doc",
+				).Add(
+					http.MethodGet,
+					"/docs/:name", "read_doc",
+				).Add(
+					http.MethodPut,
+					"/docs/:name", "update_doc",
+				).Add(
+					http.MethodDelete,
+					"/docs/:name", "delete_doc",
+				),
+			},
+			in: `
+POST    /docs/:name create_doc
+GET     /docs/:name read_doc
+PUT     /docs/:name update_doc
+DELETE  /docs/:name delete_doc
+			`,
+		},
 	} {
 		config, err := Parse(tst.in)
 		if err != nil {

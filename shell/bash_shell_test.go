@@ -46,4 +46,6 @@ func TestBashShellError(t *testing.T) {
 		t.Errorf("Should have produced an error")
 	}
 	assert.Equal(t, len(out), 0)
+	// Make sure the busy lock was released
+	assert.Equal(t, false, bash.Busy())
 }

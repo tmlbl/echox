@@ -65,7 +65,7 @@ func Parse(s string) (*Config, error) {
 		if len(line) == 0 {
 			continue
 		}
-		args := strings.Split(line, " ")
+		args := strings.Fields(line)
 		cmd := strings.ToUpper(args[0])
 		if cmd == "INCLUDE" {
 			cfg.Sources = append(cfg.Sources, args[1])
