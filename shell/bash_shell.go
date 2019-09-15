@@ -14,10 +14,11 @@ type BashShell struct {
 	in   io.WriteCloser
 	out  io.ReadCloser
 	lock sync.Mutex
+	busy bool
 }
 
 // Bash starts a bash process for commands to be run in
-func Bash() (*BashShell, error) {
+func Bash() Shell {
 	c := exec.Command("bash")
 	in, _ := c.StdinPipe()
 	out, _ := c.StdoutPipe()
@@ -26,11 +27,8 @@ func Bash() (*BashShell, error) {
 		in:  in,
 		out: out,
 	}
-	err := s.c.Start()
-	if err != nil {
-		return nil, err
-	}
-	return s, nil
+	s.c.Start()
+	return s
 }
 
 // Include imports a bash source file into the process
@@ -72,6 +70,7 @@ func (s *BashShell) define(name, value string) error {
 // Exec runs the given command in the bash shell
 func (s *BashShell) Exec(cmd string, defs map[string]string) ([]byte, error) {
 	s.lock.Lock()
+	s.busy = true
 	defer s.lock.Unlock()
 
 	// Define temporary variables
@@ -84,5 +83,11 @@ func (s *BashShell) Exec(cmd string, defs map[string]string) ([]byte, error) {
 		return nil, err
 	}
 
+	s.busy = false
 	return out, nil
+}
+
+// Busy informs the caller whether a process is already running
+func (s *BashShell) Busy() bool {
+	return s.busy
 }

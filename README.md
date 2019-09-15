@@ -5,7 +5,7 @@ echox is a framework for writing web applications in shell languages. It manages
 a number of shell processes and executes functions in them in response to web
 requests.
 
-## Usage
+## Basic Configuration
 
 Configuration can be supplied from a file or to `stdin`. The configuration
 language is simple and only uses a few commands:
@@ -33,6 +33,41 @@ say_hello() {
 echo "include hello.sh; handle / say_hello" | echox
 ```
 
+Semicolons or newlines can be used as separators. An equivalent config file
+could look like this:
+
+```
+# example.txt
+include hello.sh
+
+handle / say_hello
+```
+
+```bash
+echox example.txt
+```
+
+## Request Handling
+
+Your function will be invoked every time an HTTP request matches the supplied
+path. Shell processes are locked when executing, so you only have to worry
+about dealing with one request at a time.
+
+### Route Parameters
+
+Route parameters are expanded into shell variables. Using them is trivial:
+
+```bash
+# greet.sh
+greet_by_name() {
+    echo "Hello, $name!"
+}
+```
+
+```bash
+echo "include greet.sh; handle /greet/:name greet_by_name" | echox
+```
+
 ### Headers
 
 Request headers are supplied in the `headers` variable. Each header is separated
@@ -51,5 +86,3 @@ get_user_agent() {
     done
 }
 ```
-
-More features to come!

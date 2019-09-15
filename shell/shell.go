@@ -9,5 +9,5 @@ type Shell interface {
 	// Execute a command in the running process
 	Exec(cmd string, defs map[string]string) (out []byte, err error)
 	// Inform the caller whether a command is currently running
-	// Busy() bool
+	Busy() bool
 }

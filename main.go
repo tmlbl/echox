@@ -6,42 +6,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	"runtime"
 
 	"github.com/tmlbl/echox/config"
+	"github.com/tmlbl/echox/server"
 	"github.com/tmlbl/echox/shell"
 )
-
-func handler(sources []string, cmd string) func(w http.ResponseWriter, r *http.Request) {
-	ps, err := shell.Bash()
-	if err != nil {
-		panic(err)
-	}
-	for _, src := range sources {
-		ps.Include(src)
-	}
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Supply headers to the function in a format amenable to shell
-		// parsing
-		headers := []string{}
-		for k, v := range r.Header {
-			headers = append(headers,
-				fmt.Sprintf("%s:%s", k, strings.Join(v, ",")))
-		}
-		hdrs := strings.Join(headers, "\n")
-
-		out, err := ps.Exec(cmd, map[string]string{
-			"headers": hdrs,
-		})
-		if err != nil {
-			w.WriteHeader(500)
-			w.Write([]byte(err.Error()))
-		} else {
-			w.WriteHeader(200)
-			w.Write(out)
-		}
-	}
-}
 
 func main() {
 	cfg := config.New()
@@ -79,14 +49,18 @@ func main() {
 		}
 	}
 
-	mux := http.NewServeMux()
+	// Instantiate the server
+	srv, err := server.New(runtime.NumCPU(), cfg.Sources, shell.Bash)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// Set up handlers for the config
 	for path, cmd := range cfg.Handlers {
 		fmt.Println("[echox]", path, "=>", cmd)
-		mux.HandleFunc(path, handler(cfg.Sources, cmd))
+		srv.AddRoute(http.MethodGet, path, cmd)
 	}
 
 	fmt.Println("[echox] listening on port 7000")
-	http.ListenAndServe(":7000", mux)
+	http.ListenAndServe(":7000", srv)
 }
