@@ -11,12 +11,13 @@ Configuration can be supplied from a file or to `stdin`. The configuration
 language is simple and only uses a few commands:
 
 * `include [file]` - Loads a source file into all shell processes
-* `handle [path] [func]` - Responds to the given path with the given function
+* `[method] [path] [func]` - Requests for the given method and path invoke the
+given function
 
 For example, this server will return the current date:
 
 ```bash
-echo "handle / date" | echox
+echo "get / date" | echox
 ```
 
 Or, you can load a function from another file
@@ -30,7 +31,7 @@ say_hello() {
 ```
 
 ```bash
-echo "include hello.sh; handle / say_hello" | echox
+echo "include hello.sh; get / say_hello" | echox
 ```
 
 Semicolons or newlines can be used as separators. An equivalent config file
@@ -40,7 +41,7 @@ could look like this:
 # example.txt
 include hello.sh
 
-handle / say_hello
+get / say_hello
 ```
 
 ```bash
@@ -65,7 +66,7 @@ greet_by_name() {
 ```
 
 ```bash
-echo "include greet.sh; handle /greet/:name greet_by_name" | echox
+echo "include greet.sh; get /greet/:name greet_by_name" | echox
 ```
 
 ### Headers
