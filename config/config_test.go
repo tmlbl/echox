@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,34 +14,36 @@ func TestConfigParsing(t *testing.T) {
 	}{
 		{
 			expect: Config{
-				Handlers: map[string]string{},
+				Handlers: NewHandlerMap(),
 			},
 			in: "",
 		},
 		{
 			expect: Config{
-				Handlers: map[string]string{},
+				Handlers: NewHandlerMap(),
 				Sources:  []string{"foo.sh", "bar.sh"},
 			},
 			in: "include foo.sh\ninclude bar.sh",
 		},
 		{
 			expect: Config{
-				Handlers: map[string]string{
-					"/now": "date",
-				},
+				Handlers: NewHandlerMap().Add(
+					http.MethodGet,
+					"/now", "date",
+				),
 				Sources: []string{"foo.sh"},
 			},
-			in: "include foo.sh\nhandle /now date",
+			in: "include foo.sh\nget /now date",
 		},
 		{
 			expect: Config{
-				Handlers: map[string]string{
-					"/now": "date",
-				},
+				Handlers: NewHandlerMap().Add(
+					http.MethodGet,
+					"/now", "date",
+				),
 				Sources: []string{"foo.sh"},
 			},
-			in: "include foo.sh; handle /now date",
+			in: "include foo.sh; get /now date",
 		},
 	} {
 		config, err := Parse(tst.in)

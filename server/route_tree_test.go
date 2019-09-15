@@ -42,3 +42,13 @@ func TestDeepParamMatch(t *testing.T) {
 		"child":  "bar",
 	}, params)
 }
+
+func TestMultiMethod(t *testing.T) {
+	rt := NewRouteTree()
+	rt.Add(http.MethodGet, "/foo/bar", "baz")
+	rt.Add(http.MethodPost, "/foo/bar", "doot")
+	item, _ := rt.Match(http.MethodGet, "/foo/bar")
+	assert.Equal(t, "baz", item)
+	item, _ = rt.Match(http.MethodPost, "/foo/bar")
+	assert.Equal(t, "doot", item)
+}

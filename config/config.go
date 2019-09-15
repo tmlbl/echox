@@ -1,19 +1,49 @@
 package config
 
 import (
+	"net/http"
 	"strings"
 )
+
+var httpMethods = []string{
+	http.MethodGet, http.MethodConnect, http.MethodDelete, http.MethodHead,
+	http.MethodOptions, http.MethodPatch, http.MethodPut, http.MethodTrace,
+}
+
+func isMethod(s string) bool {
+	for _, m := range httpMethods {
+		if s == m {
+			return true
+		}
+	}
+	return false
+}
+
+type HandlerMap map[string]map[string]string
+
+func NewHandlerMap() HandlerMap {
+	h := HandlerMap{}
+	for _, m := range httpMethods {
+		h[m] = map[string]string{}
+	}
+	return h
+}
+
+func (h HandlerMap) Add(method, key, value string) HandlerMap {
+	h[method][key] = value
+	return h
+}
 
 // Config represents config information required to run a server
 type Config struct {
 	Sources  []string
-	Handlers map[string]string
+	Handlers HandlerMap
 }
 
 // New creates a new Config instance with a non-nil Handlers map
 func New() *Config {
 	return &Config{
-		Handlers: map[string]string{},
+		Handlers: NewHandlerMap(),
 	}
 }
 
@@ -28,7 +58,7 @@ func (c *Config) Merge(c2 *Config) {
 // Parse parses the input string into a config object
 func Parse(s string) (*Config, error) {
 	cfg := Config{
-		Handlers: map[string]string{},
+		Handlers: NewHandlerMap(),
 	}
 
 	lines := strings.FieldsFunc(s, func(r rune) bool {
@@ -40,11 +70,11 @@ func Parse(s string) (*Config, error) {
 			continue
 		}
 		args := strings.Split(line, " ")
-		switch args[0] {
-		case "include":
+		cmd := strings.ToUpper(args[0])
+		if cmd == "INCLUDE" {
 			cfg.Sources = append(cfg.Sources, args[1])
-		case "handle":
-			cfg.Handlers[args[1]] = args[2]
+		} else if isMethod(cmd) {
+			cfg.Handlers.Add(cmd, args[1], args[2])
 		}
 	}
 

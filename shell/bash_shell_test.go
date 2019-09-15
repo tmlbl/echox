@@ -6,17 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testBash(t *testing.T) Shell {
-	ps, err := Bash()
-	if err != nil {
-		t.Error(err)
-		return nil
-	}
-	return ps
-}
-
 func TestBashShell(t *testing.T) {
-	bash := testBash(t)
+	bash := Bash()
 	out, err := bash.Exec("echo hello", nil)
 	if err != nil {
 		t.Error(err)
@@ -25,7 +16,7 @@ func TestBashShell(t *testing.T) {
 }
 
 func TestBashShellInclude(t *testing.T) {
-	bash := testBash(t)
+	bash := Bash()
 	err := bash.Include("test/my_func.sh")
 	if err != nil {
 		t.Error(err)
@@ -38,7 +29,7 @@ func TestBashShellInclude(t *testing.T) {
 }
 
 func TestBashShellDefs(t *testing.T) {
-	bash := testBash(t)
+	bash := Bash()
 	out, err := bash.Exec("echo $foo", map[string]string{
 		"foo": "bar",
 	})
@@ -49,7 +40,7 @@ func TestBashShellDefs(t *testing.T) {
 }
 
 func TestBashShellError(t *testing.T) {
-	bash := testBash(t)
+	bash := Bash()
 	out, err := bash.Exec("forkjgorkgg", nil)
 	if err == nil {
 		t.Errorf("Should have produced an error")

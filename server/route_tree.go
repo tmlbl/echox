@@ -13,10 +13,20 @@ type RouteTree struct {
 	method   string
 }
 
+var httpMethods = []string{
+	http.MethodGet, http.MethodConnect, http.MethodDelete, http.MethodHead,
+	http.MethodOptions, http.MethodPatch, http.MethodPut, http.MethodTrace,
+}
+
 func NewRouteTree() *RouteTree {
+	children := []*RouteTree{}
+	for _, method := range httpMethods {
+		children = append(children, &RouteTree{
+			method: method,
+		})
+	}
 	return &RouteTree{
-		part:   "/",
-		method: http.MethodGet,
+		children: children,
 	}
 }
 
@@ -32,7 +42,7 @@ func (t *RouteTree) getChild(method, part string) *RouteTree {
 }
 
 func isWildCard(part string) bool {
-	return part[0] == ':'
+	return len(part) > 0 && part[0] == ':'
 }
 
 func (t *RouteTree) Add(method, path, item string) {

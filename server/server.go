@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -37,6 +38,11 @@ func (s *Server) AddRoute(method, path, item string) {
 
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	item, params := s.routes.Match(r.Method, r.URL.Path)
+	if item == "" {
+		// No handler found
+		w.WriteHeader(404)
+		return
+	}
 
 	// Find an available process
 	var process shell.Shell
@@ -62,7 +68,21 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	params["headers"] = strings.Join(headers, "\n")
 
+	// Supply body content in the body variable
+	if r.Method == http.MethodPost || r.Method == http.MethodPut {
+		defer r.Body.Close()
+		body, err := ioutil.ReadAll(r.Body)
+		if err == nil {
+			params["body"] = string(body)
+		}
+	}
+
+	fmt.Println("Executing", item, "...")
 	out, err := process.Exec(item, params)
+
+	// Write a CORS header because CORS is annoying
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte(err.Error()))

@@ -56,9 +56,11 @@ func main() {
 	}
 
 	// Set up handlers for the config
-	for path, cmd := range cfg.Handlers {
-		fmt.Println("[echox]", path, "=>", cmd)
-		srv.AddRoute(http.MethodGet, path, cmd)
+	for method := range cfg.Handlers {
+		for path, cmd := range cfg.Handlers[method] {
+			fmt.Println("[echox]", path, "=>", cmd)
+			srv.AddRoute(http.MethodGet, path, cmd)
+		}
 	}
 
 	fmt.Println("[echox] listening on port 7000")
