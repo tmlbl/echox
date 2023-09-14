@@ -5,6 +5,14 @@ echox is a framework for writing web applications in shell languages. It manages
 a number of shell processes and executes functions in them in response to web
 requests.
 
+## Why?
+
+I am not sure. Because I can, I guess.
+
+## Should I use this for my next "microservice"?
+
+Absolutely not.
+
 ## Basic Configuration
 
 Configuration can be supplied from a file or to `stdin`. The configuration
