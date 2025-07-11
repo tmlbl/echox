@@ -46,8 +46,10 @@ func New() *Config {
 // Merge combines another Config into the receiver
 func (c *Config) Merge(c2 *Config) {
 	c.Sources = append(c.Sources, c2.Sources...)
-	for k, v := range c2.Handlers {
-		c.Handlers[k] = v
+	for method, handlers := range c2.Handlers {
+		for k, v := range handlers {
+			c.Handlers[method][k] = v
+		}
 	}
 }
 
