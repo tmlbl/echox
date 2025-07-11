@@ -76,3 +76,58 @@ func Parse(s string) (*Config, error) {
 
 	return &cfg, nil
 }
+
+// ParseBash parses a bash script and builds a handler map
+// by looking for comments in this format:
+// # GET /greet/:name
+// Above function definitions
+func ParseBash(s string) (*Config, error) {
+	cfg := Config{
+		Handlers: NewHandlerMap(),
+	}
+
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.Fields(line)
+		if len(parts) < 3 || parts[0] != "#" {
+			continue
+		}
+
+		method := strings.ToUpper(parts[1])
+		if !isMethod(method) {
+			continue
+		}
+		path := parts[2]
+
+		if i+1 >= len(lines) {
+			continue
+		}
+		nextLine := strings.TrimSpace(lines[i+1])
+
+		// must be a function definition e.g. `my_func()`
+		// and not a variable assignment e.g. `my_var=(...)`
+		if !strings.Contains(nextLine, "()") {
+			continue
+		}
+		parenIx := strings.Index(nextLine, "(")
+		if parenIx <= 0 {
+			continue
+		}
+
+		cmd := strings.TrimSpace(nextLine[:parenIx])
+		cmd = strings.TrimPrefix(cmd, "function")
+		cmd = strings.TrimSpace(cmd)
+
+		if cmd == "" {
+			continue
+		}
+
+		cfg.Handlers.Add(method, path, cmd)
+	}
+	return &cfg, nil
+}

@@ -3,57 +3,45 @@ echox
 
 echox is a framework for writing web applications in shell languages. It manages
 a number of shell processes and executes functions in them in response to web
-requests.
+requests. You can use it to quickly create web services that directly execute
+commands on the machine in response to user requests.
 
-## Why?
+## Is this safe to do?
 
-I am not sure. Because I can, I guess.
+No, it is not.
 
 ## Should I use this for my next "microservice"?
 
-Absolutely not.
+If you dare...
 
-## Basic Configuration
+## Writing services
 
-Configuration can be supplied from a file or to `stdin`. The configuration
-language is simple and only uses a few commands:
-
-* `include [file]` - Loads a source file into all shell processes
-* `[method] [path] [func]` - Requests for the given method and path invoke the
-given function
-
-For example, this server will return the current date:
+You can write your web service logic in a bash script like so:
 
 ```bash
-echo "get / date" | echox
-```
-
-Or, you can load a function from another file
-
-```bash
-# hello.sh
-say_hello() {
-    now=$(date)
-    echo "Hello! It is $now"
+# A comment like the one below must appear above the function definition
+# GET /cowsay/:moo
+function run_cowsay() {
+  cowsay $moo
 }
 ```
 
-```bash
-echo "include hello.sh; get / say_hello" | echox
-```
-
-Semicolons or newlines can be used as separators. An equivalent config file
-could look like this:
-
-```
-# example.txt
-include hello.sh
-
-get / say_hello
-```
+Then pass it into `echox` to start the service:
 
 ```bash
-echox example.txt
+echox hello.sh
+```
+
+```
+> curl localhost:7171/cowsay/echox%20is%20cool
+ _______________
+< echox is cool >
+ ---------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 ```
 
 ## Request Handling
@@ -67,14 +55,33 @@ about dealing with one request at a time.
 Route parameters are expanded into shell variables. Using them is trivial:
 
 ```bash
-# greet.sh
+# GET /greet/:name
 greet_by_name() {
     echo "Hello, $name!"
 }
 ```
 
+### Posting data
+
+You can also access data from the request body of POST and PUT requests in the
+`body` variable.
+
 ```bash
-echo "include greet.sh; get /greet/:name greet_by_name" | echox
+# POST /files/:name
+post_file() {
+  echo $body > $name
+}
+
+# GET /files/:name
+get_file() {
+  cat $name
+}
+```
+
+```
+> curl -XPOST -d "content" localhost:7171/files/foo
+> curl localhost:7171/files/foo
+content
 ```
 
 ### Headers
@@ -84,7 +91,6 @@ by a newline, and header names and values are separated by a `:`. This allows
 them to be interpreted with coreutils.
 
 ```bash
-# headers.sh
 get_user_agent() {
     for h in $headers; do
         name=$(echo $h | cut -d ':' -f 1)

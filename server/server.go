@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -21,6 +21,7 @@ func New(nproc int, sources []string, provider func() shell.Shell) (*Server, err
 	s := Server{
 		routes: NewRouteTree(),
 	}
+	fmt.Printf("[echox] starting %d workers\n", nproc)
 	for i := 0; i < nproc; i++ {
 		sh := provider()
 		for _, src := range sources {
@@ -71,13 +72,13 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Supply body content in the body variable
 	if r.Method == http.MethodPost || r.Method == http.MethodPut {
 		defer r.Body.Close()
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err == nil {
 			params["body"] = string(body)
 		}
 	}
 
-	fmt.Println("Executing", item, "...")
+	fmt.Printf("[echox] %s %s\n", r.Method, r.URL.Path)
 	out, err := process.Exec(item, params)
 
 	// Write a CORS header because CORS is annoying

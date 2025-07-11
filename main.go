@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/tmlbl/echox/config"
 	"github.com/tmlbl/echox/server"
@@ -19,22 +20,30 @@ func main() {
 	// If the arguments are config files, load them
 	for _, arg := range os.Args[1:] {
 		if _, err := os.Stat(arg); err == nil {
-			fmt.Println("Loading config from", arg)
-			data, err := ioutil.ReadFile(arg)
+			data, err := os.ReadFile(arg)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			c, err := config.Parse(string(data))
-			if err != nil {
-				log.Fatalln(err)
+			if strings.HasSuffix(arg, ".sh") {
+				c, err := config.ParseBash(string(data))
+				if err != nil {
+					log.Fatalln(err)
+				}
+				c.Sources = append(c.Sources, arg)
+				cfg.Merge(c)
+			} else {
+				c, err := config.Parse(string(data))
+				if err != nil {
+					log.Fatalln(err)
+				}
+				cfg.Merge(c)
 			}
-			cfg.Merge(c)
 		}
 	}
 
 	// If we got no arguments, attempt to read config from stdin
 	if len(os.Args) == 1 {
-		data, err := ioutil.ReadAll(os.Stdin)
+		data, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -64,5 +73,5 @@ func main() {
 	}
 
 	fmt.Println("[echox] listening on port 7000")
-	http.ListenAndServe(":7000", srv)
+	log.Fatalln(http.ListenAndServe(":7171", srv))
 }
