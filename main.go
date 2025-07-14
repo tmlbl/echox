@@ -72,6 +72,8 @@ func main() {
 		}
 	}
 
-	fmt.Println("[echox] listening on port 7000")
-	log.Fatalln(http.ListenAndServe(":7171", srv))
+	addr := ":7171"
+
+	fmt.Printf("[echox] listening on %s\n", addr)
+	log.Fatalln(http.ListenAndServe(addr, srv))
 }
