@@ -63,7 +63,8 @@ func (s *BashShell) getOutput(cmd string) ([]byte, error) {
 
 // Define defines a variable inside the bash process
 func (s *BashShell) define(name, value string) error {
-	_, err := s.in.Write([]byte(fmt.Sprintf("%s='%s'\n", name, value)))
+	def := fmt.Sprintf("%s='%s'\n", name, value)
+	_, err := s.in.Write([]byte(def))
 	return err
 }
 

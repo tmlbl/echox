@@ -65,7 +65,7 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	headers := []string{}
 	for k, v := range r.Header {
 		headers = append(headers,
-			fmt.Sprintf("%s:%s", k, strings.Join(v, ",")))
+			fmt.Sprintf("%s %s", k, strings.Join(v, ",")))
 	}
 	params["headers"] = strings.Join(headers, "\n")
 

@@ -86,18 +86,13 @@ content
 
 ### Headers
 
-Request headers are supplied in the `headers` variable. Each header is separated
-by a newline, and header names and values are separated by a `:`. This allows
-them to be interpreted with coreutils.
+Request headers are supplied in the `headers` variable. They can be parsed using 
+simple command chains like `grep` and `awk`
 
 ```bash
-get_user_agent() {
-    for h in $headers; do
-        name=$(echo $h | cut -d ':' -f 1)
-        if [ "$name" = "User-Agent" ]; then
-            agent=$(echo $h | cut -d ':' -f 2)
-            echo "Your user agent is $agent"
-        fi
-    done
+# GET /
+show_headers() {
+  user_agent=$(echo "$headers" | grep -i user-agent | awk '{print $2}')
+  echo "Your user agent is $user_agent"
 }
 ```

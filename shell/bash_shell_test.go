@@ -49,3 +49,14 @@ func TestBashShellError(t *testing.T) {
 	// Make sure the busy lock was released
 	assert.Equal(t, false, bash.Busy())
 }
+
+func TestBashShellMultiLineVar(t *testing.T) {
+	bash := Bash()
+	out, err := bash.Exec("echo \"$foo\"", map[string]string{
+		"foo": "bar\nbaz",
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, "bar\nbaz\n", string(out))
+}
